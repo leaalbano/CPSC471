@@ -11,7 +11,7 @@ import sys
 
 # Command line checks 
 if len(sys.argv) < 2:
-	print "USAGE python " + sys.argv[0] + " <FILE NAME>" 
+	print ("USAGE python " + sys.argv[0] + " <FILE NAME>")
 
 # Server address
 serverAddr = "localhost"
@@ -26,6 +26,7 @@ fileName = sys.argv[1]
 fileObj = open(fileName, "r")
 
 # Create a TCP socket
+
 connSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Connect to the server
@@ -59,7 +60,7 @@ while True:
 	
 		# Prepend the size of the data to the
 		# file data.
-		fileData = dataSizeStr + fileData	
+		fileData = dataSizeStr.encode() + fileData.encode()	
 		
 		# The number of bytes sent
 		numSent = 0
@@ -73,8 +74,8 @@ while True:
 		break
 
 
-print "Sent ", numSent, " bytes."
-	
+print ("Sent", numSent, "bytes.")
+
 # Close the socket and the file
 connSock.close()
 fileObj.close()
