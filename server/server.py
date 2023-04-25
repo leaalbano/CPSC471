@@ -1,3 +1,4 @@
+import argparse
 import socket
 
 class Server:
@@ -26,5 +27,9 @@ class Server:
         conn.close()
 
 if __name__ == '__main__':
-    server = Server('localhost', 8000)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('port', type=int, help='IP or hostname')
+    args = parser.parse_args()
+    print(args.port)
+    server = Server('localhost', args.port)
     server.start()
