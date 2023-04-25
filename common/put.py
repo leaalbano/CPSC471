@@ -1,6 +1,5 @@
 class PutFile:
-    def __init__(self, path, data, size):
-        self.path = path
+    def __init__(self, data, size):
         self.data = data
         self.size = size
 
@@ -9,3 +8,4 @@ class PutFile:
 
         while bytes_sent != len(self.data):
             bytes_sent += client_socket.send(self.data[bytes_sent:])
+            self.socket.sendall(bytes(data, "utf-8"))

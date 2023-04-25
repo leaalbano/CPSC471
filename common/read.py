@@ -6,6 +6,7 @@ class FileReader:
     def read_file(self):
         with open(self.file_name, 'r') as file:
             self.file_contents = file.read()
+        return self.file_contents
 
     def print_file_contents(self):
         print(self.file_contents)
