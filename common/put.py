@@ -12,5 +12,6 @@ class PutFile:
             bytes_sent += client_socket.send(bytes(payload[bytes_sent:], "utf-8"))
 
     def build_message(self):
-
-        return "HEAD:PUT#FILE:" + self.fileName  + "#" + str(self.data)
+        size = len(self.data)
+        headerMessage = "HEAD:PUT#FILE:" + self.fileName  + "#SIZE:"+ str(size)+"#PAYLOAD:"
+        return headerMessage + str(self.data)
