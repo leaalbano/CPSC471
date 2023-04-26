@@ -3,7 +3,7 @@ import argparse
 import socket
 sys.path.insert(0, "..")
 
-from common import FileReader, PutFile
+from common import FileReader, PutFile, ReceiveFile, FileWriter
 
 
 class Client:
@@ -18,35 +18,42 @@ class Client:
         print('Connected to {}:{}'.format(self.host, self.port))
 
     def start(self):
-        command = self.parse_command(self.prompt())
+        command = self.prompt().split(' ')
         while command[0] != 'quit':
-            if command[0] == 'ls':
+            if command[0].lower() == 'ls':
                 self.send_data_as_bytes('HEAD:LS')
-                self.receive_data()
-            elif command[0] == 'get':
-                self.send_data_as_bytes('HEAD:GET')
-            elif command[0] == 'put':
+                self.receive_file_data()
+            elif command[0].lower() == 'get':
+                self.send_data_as_bytes('HEAD:GET#FILE:'+command[1])
+                self.receive_file_data()
+            elif command[0].lower() == 'put':
                 fileData = FileReader(sys.path[1]+"/" + command[1]).read_file()
                 put_file = PutFile(fileData, command[1])
                 put_file.send_file(self.socket)
             else:
                 print('Invalid command')
-            command = self.parse_command(self.prompt())
+            command = self.prompt().split(' ')
 
         self.send_data_as_bytes('HEAD:QUIT')
         self.socket.close()
 
-    def receive_data(self):
-        data = self.socket.recv(25)
-        received_message = data.decode()
-        print('Received message:', received_message)
+    def receive_file_data(self):
+        data = self.socket.recv(80)
+        parced_data = data.decode().split('#')
+        print("Received message:", data.decode())
+        fileName = parced_data[1].split(':')
+        size = parced_data[2].split(':')
+        payload = parced_data[3].split(':')
+        fileReceiveObject = ReceiveFile(int(size[1]), payload[1])
+        fileReceiveObject.receive_file(self.socket)
+        dataToWrite = fileReceiveObject.get_data()
+        FileWriter(fileName[1]).write_to_file(dataToWrite)
+
+    def receive_directory_data(self):
         pass
 
     def prompt(self):
         return input("ftp> ")
-
-    def parse_command(self, command):
-        return command.split(' ')
 
     def send_data_as_bytes(self, data):
         self.socket.sendall(bytes(data, "utf-8"))

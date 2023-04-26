@@ -3,7 +3,7 @@ import argparse
 import socket
 sys.path.insert(0, "..")
 
-from common import ReceiveFile, FileWriter
+from common import ReceiveFile, FileWriter, FileReader, PutFile
 
 
 class Server:
@@ -19,11 +19,8 @@ class Server:
         conn, addr = self.socket.accept()
         print('Connected by', addr)
         data = conn.recv(80)
-        parced_data = self.parse_command(data.decode())
+        parced_data = data.decode().split('#')
         while parced_data[0] != 'HEAD:QUIT':
-
-            if not data:
-                break
             received_message = data.decode()
             print('Received message:', received_message)
             if parced_data[0] == 'HEAD:PUT':
@@ -36,18 +33,17 @@ class Server:
                 FileWriter(fileName[1]).write_to_file(dataToWrite)
             elif parced_data[0] == 'HEAD:GET':
                 print('GET Command received')
+                fileName = parced_data[1].split(':')
+                fileData = FileReader(sys.path[1] + "/" + fileName[1]).read_file()
+                put_file = PutFile(fileData, fileName[1])
+                put_file.send_file(conn)
             elif parced_data[0] == 'HEAD:LS':
                 print('LS Command received')
 
-            send_message = 'ok'
-            conn.sendall(send_message.encode())
-            data = conn.recv(15)
-            parced_data = self.parse_command(data.decode())
+            data = conn.recv(80)
+            parced_data = data.decode().split('#')
 
         conn.close()
-
-    def parse_command(self, command):
-        return command.split('#')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
