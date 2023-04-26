@@ -3,7 +3,8 @@ import argparse
 import socket
 sys.path.insert(0, "..")
 
-from common import FileReader
+from common import FileReader, PutFile
+
 
 class Client:
     def __init__(self, host, port):
@@ -25,18 +26,18 @@ class Client:
             elif command[0] == 'get':
                 self.send_data_as_bytes('HEAD:GET')
             elif command[0] == 'put':
-                print(sys.path[1])
-                file = FileReader(sys.path[1]+"/" + command[1]).read_file()
-                print(file)
-                self.send_data_as_bytes('HEAD:PUT')
+                fileData = FileReader(sys.path[1]+"/" + command[1]).read_file()
+                put_file = PutFile(fileData, command[1])
+                put_file.send_file(self.socket)
             else:
                 print('Invalid command')
             command = self.parse_command(self.prompt())
 
+        self.send_data_as_bytes('HEAD:QUIT')
         self.socket.close()
 
     def receive_data(self):
-        data = self.socket.recv(1024)
+        data = self.socket.recv(25)
         received_message = data.decode()
         print('Received message:', received_message)
         pass

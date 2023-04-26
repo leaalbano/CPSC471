@@ -1,5 +1,7 @@
+import sys
 import argparse
 import socket
+sys.path.insert(0, "..")
 
 class Server:
     def __init__(self, host, port):
@@ -13,18 +15,31 @@ class Server:
         print('Server listening on {}:{}'.format(self.host, self.port))
         conn, addr = self.socket.accept()
         print('Connected by', addr)
+        data = conn.recv(15)
+        parced_data = self.parse_command(data.decode())
+        while parced_data[0] != 'HEAD:QUIT':
 
-        while True:
-            data = conn.recv(1024)
             if not data:
                 break
             received_message = data.decode()
-            print('Received message:', received_message)
 
-            send_message = input('Enter a message to send: ')
+            if parced_data[0] == 'HEAD:LS':
+                print('LS Command received')
+            elif parced_data[0] == 'HEAD:GET':
+                print('GET Command received')
+            elif parced_data[0] == 'HEAD:PUT':
+                print('PUT Command received')
+
+
+            send_message = 'ok'
             conn.sendall(send_message.encode())
+            data = conn.recv(15)
+            parced_data = self.parse_command(data.decode())
 
         conn.close()
+
+    def parse_command(self, command):
+        return command.split('#')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -32,4 +47,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args.port)
     server = Server('localhost', args.port)
-    server.start()
+    while True:
+        server.start()

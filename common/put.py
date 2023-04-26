@@ -1,11 +1,16 @@
 class PutFile:
-    def __init__(self, data, size):
+    def __init__(self, data, fileName):
         self.data = data
-        self.size = size
+        self.fileName = fileName
 
     def send_file(self, client_socket):
         bytes_sent = 0
 
-        while bytes_sent != len(self.data):
-            bytes_sent += client_socket.send(self.data[bytes_sent:])
-            self.socket.sendall(bytes(data, "utf-8"))
+        payload = self.build_message()
+
+        while bytes_sent != len(payload):
+            bytes_sent += client_socket.send(bytes(payload[bytes_sent:], "utf-8"))
+
+    def build_message(self):
+
+        return "HEAD:PUT#FILE:" + self.fileName  + "#" + str(self.data)
