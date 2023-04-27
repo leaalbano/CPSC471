@@ -1,12 +1,14 @@
 class ReceiveFile:
-    def __init__(self, data, size):
-        self.data = data
+    def __init__(self, size, firstChunk):
         self.size = size
+        self.data = firstChunk
+        self.bytes_received = len(firstChunk)
 
-    def receive_file(self, client_socke):
-        data = self.socket.recv(1024)
-        received_message = data.decode()
-        print('Received message:', received_message)
-        while bytes_received != len(self.data):
-            bytes_received += client_socket.recv(self.data[bytes_received:])
-            self.socket.recvall(bytes(self.data, "utf-8"))
+    def receive_file(self, client_socket):
+        while self.bytes_received < self.size:
+            buffer = client_socket.recv(80)
+            self.data += buffer.decode()
+            self.bytes_received += len(buffer)
+
+    def get_data(self):
+        return self.data

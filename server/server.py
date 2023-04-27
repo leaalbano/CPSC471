@@ -3,6 +3,9 @@ import argparse
 import socket
 sys.path.insert(0, "..")
 
+from common import ReceiveFile, FileWriter, FileReader, PutFile
+
+
 class Server:
     def __init__(self, host, port):
         self.host = host
@@ -15,31 +18,32 @@ class Server:
         print('Server listening on {}:{}'.format(self.host, self.port))
         conn, addr = self.socket.accept()
         print('Connected by', addr)
-        data = conn.recv(15)
-        parced_data = self.parse_command(data.decode())
+        data = conn.recv(80)
+        parced_data = data.decode().split('#')
         while parced_data[0] != 'HEAD:QUIT':
-
-            if not data:
-                break
             received_message = data.decode()
-
-            if parced_data[0] == 'HEAD:LS':
-                print('LS Command received')
+            print('Received message:', received_message)
+            if parced_data[0] == 'HEAD:PUT':
+                fileName = parced_data[1].split(':')
+                size = parced_data[2].split(':')
+                payload = parced_data[3].split(':')
+                fileReceiveObject = ReceiveFile(int(size[1]), payload[1])
+                fileReceiveObject.receive_file(conn)
+                dataToWrite = fileReceiveObject.get_data()
+                FileWriter(fileName[1]).write_to_file(dataToWrite)
             elif parced_data[0] == 'HEAD:GET':
                 print('GET Command received')
-            elif parced_data[0] == 'HEAD:PUT':
-                print('PUT Command received')
+                fileName = parced_data[1].split(':')
+                fileData = FileReader(sys.path[1] + "/" + fileName[1]).read_file()
+                put_file = PutFile(fileData, fileName[1])
+                put_file.send_file(conn)
+            elif parced_data[0] == 'HEAD:LS':
+                print('LS Command received')
 
-
-            send_message = 'ok'
-            conn.sendall(send_message.encode())
-            data = conn.recv(15)
-            parced_data = self.parse_command(data.decode())
+            data = conn.recv(80)
+            parced_data = data.decode().split('#')
 
         conn.close()
-
-    def parse_command(self, command):
-        return command.split('#')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
