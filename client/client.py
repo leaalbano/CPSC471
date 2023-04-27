@@ -4,6 +4,7 @@ import socket
 sys.path.insert(0, "..")
 
 from common import FileReader, PutFile
+from common import ListDirectory
 
 
 class Client:
@@ -21,6 +22,9 @@ class Client:
         command = self.parse_command(self.prompt())
         while command[0] != 'quit':
             if command[0] == 'ls':
+                ls_command = ListDirectory()
+                ls_command.ListDir()
+
                 self.send_data_as_bytes('HEAD:LS')
                 self.receive_data()
             elif command[0] == 'get':
