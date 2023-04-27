@@ -24,7 +24,7 @@ class Client:
                 ls_command = ListDirectory()
                 ls_command.ListDir()
                 self.send_data_as_bytes('HEAD:LS')
-                self.receive_file_data()
+                
         
             elif command[0].lower() == 'get':
                 self.send_data_as_bytes('HEAD:GET#FILE:'+command[1])
