@@ -3,7 +3,7 @@ import argparse
 import socket
 sys.path.insert(0, "..")
 
-from common import ReceiveFile, FileWriter, FileReader, PutFile
+from common import ReceiveFile, FileWriter, FileReader, PutFile, ListDirectory
 
 
 class Server:
@@ -24,6 +24,7 @@ class Server:
             received_message = data.decode()
             print('Received message:', received_message)
             if parced_data[0] == 'HEAD:PUT':
+                print('PUT Command received')
                 fileName = parced_data[1].split(':')
                 size = parced_data[2].split(':')
                 payload = parced_data[3].split(':')
@@ -39,6 +40,10 @@ class Server:
                 put_file.send_file(conn)
             elif parced_data[0] == 'HEAD:LS':
                 print('LS Command received')
+                files = ListDirectory(sys.path[1])
+                put_file = PutFile(files.ListOfFiles(), "none")
+                put_file.send_file(conn)
+
 
             data = conn.recv(80)
             parced_data = data.decode().split('#')

@@ -21,11 +21,8 @@ class Client:
         command = self.prompt().split(' ')
         while command[0] != 'quit':
             if command[0] == 'ls':
-                ls_command = ListDirectory()
-                ls_command.ListDir()
                 self.send_data_as_bytes('HEAD:LS')
-                
-        
+                self.receive_dir_data()
             elif command[0].lower() == 'get':
                 self.send_data_as_bytes('HEAD:GET#FILE:'+command[1])
                 self.receive_file_data()
@@ -43,7 +40,6 @@ class Client:
     def receive_file_data(self):
         data = self.socket.recv(80)
         parced_data = data.decode().split('#')
-        print("Received message:", data.decode())
         fileName = parced_data[1].split(':')
         size = parced_data[2].split(':')
         payload = parced_data[3].split(':')
@@ -51,6 +47,16 @@ class Client:
         fileReceiveObject.receive_file(self.socket)
         dataToWrite = fileReceiveObject.get_data()
         FileWriter(fileName[1]).write_to_file(dataToWrite)
+
+    def receive_dir_data(self):
+        data = self.socket.recv(80)
+        parced_data = data.decode().split('#')
+        size = parced_data[2].split(':')
+        payload = parced_data[3].split(':')
+        fileReceiveObject = ReceiveFile(int(size[1]), payload[1])
+        fileReceiveObject.receive_file(self.socket)
+        dataToWrite = fileReceiveObject.get_data()
+        print(dataToWrite)
 
     def receive_directory_data(self):
         pass
