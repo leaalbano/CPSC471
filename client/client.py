@@ -3,7 +3,7 @@ import argparse
 import socket
 sys.path.insert(0, "..")
 
-from common import FileReader, PutFile, ReceiveFile, FileWriter, ListDirectory
+from common import FileReader, PutFile, ReceiveFile, FileWriter, ListDirectory, split_to_file_size_and_payload_helper
 
 
 class Client:
@@ -40,26 +40,20 @@ class Client:
     def receive_file_data(self):
         data = self.socket.recv(80)
         parced_data = data.decode().split('#')
-        fileName = parced_data[1].split(':')
-        size = parced_data[2].split(':')
-        payload = parced_data[3].split(':')
-        fileReceiveObject = ReceiveFile(int(size[1]), payload[1])
+        fileName, size, payload = split_to_file_size_and_payload_helper(parced_data)
+        fileReceiveObject = ReceiveFile(int(size), payload)
         fileReceiveObject.receive_file(self.socket)
         dataToWrite = fileReceiveObject.get_data()
-        FileWriter(fileName[1]).write_to_file(dataToWrite)
+        FileWriter(fileName).write_to_file(dataToWrite)
 
     def receive_dir_data(self):
         data = self.socket.recv(80)
         parced_data = data.decode().split('#')
-        size = parced_data[2].split(':')
-        payload = parced_data[3].split(':')
-        fileReceiveObject = ReceiveFile(int(size[1]), payload[1])
+        fileName, size, payload = split_to_file_size_and_payload_helper(parced_data)
+        fileReceiveObject = ReceiveFile(int(size), payload)
         fileReceiveObject.receive_file(self.socket)
         dataToWrite = fileReceiveObject.get_data()
         print(dataToWrite)
-
-    def receive_directory_data(self):
-        pass
 
     def prompt(self):
         return input("ftp> ")
